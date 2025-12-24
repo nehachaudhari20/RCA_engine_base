@@ -1,10 +1,9 @@
 import uuid
-from typing import List
 from datetime import timedelta
+from typing import List
 
 from core.schemas.event import Event
 from core.schemas.normalized_event import NormalizedEvent
-
 
 class EventNormalizer:
     def normalize(self, events: List[Event]) -> List[NormalizedEvent]:
@@ -13,19 +12,20 @@ class EventNormalizer:
         for event in events:
             failure_type = self._map_failure_type(event)
             if not failure_type:
-                continue  # ignore non-failure events
+                continue  # ignore non-failure signals
 
-            ne = NormalizedEvent(
-                normalized_event_id=str(uuid.uuid4()),
-                entity=event.entity_id,
-                failure_type=failure_type,
-                severity=self._map_severity(event),
-                time_window_start=event.timestamp - timedelta(seconds=30),
-                time_window_end=event.timestamp + timedelta(seconds=30),
-                dimensions=self._extract_dimensions(event),
-                raw_event_ids=[event.event_id],
+            normalized.append(
+                NormalizedEvent(
+                    normalized_event_id=str(uuid.uuid4()),
+                    entity=event.entity_id,
+                    failure_type=failure_type,
+                    severity=self._map_severity(event),
+                    time_window_start=event.timestamp - timedelta(seconds=30),
+                    time_window_end=event.timestamp + timedelta(seconds=30),
+                    dimensions=self._extract_dimensions(event),
+                    raw_event_ids=[event.event_id],
+                )
             )
-            normalized.append(ne)
 
         return normalized
 
@@ -43,7 +43,7 @@ class EventNormalizer:
     def _map_severity(self, event: Event) -> str:
         if event.event_type in ["dependency_timeout", "error_rate_spike"]:
             return "high"
-        if event.event_type in ["latency_spike"]:
+        if event.event_type == "latency_spike":
             return "medium"
         return "low"
 

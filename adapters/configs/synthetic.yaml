@@ -1,0 +1,33 @@
+dataset_name: synthetic_demo
+
+raw_events_path: data/synthetic/raw_events.json
+dependency_graph_path: data/synthetic/dependency_graph.json
+incident_meta_path: data/synthetic/incident_meta.json
+
+timestamp_field: timestamp
+entity_field: entity_id
+
+event_mappings:
+  - condition:
+      field: latency_ms
+      op: ">"
+      value: 3000
+    event_type: latency_spike
+    attributes:
+      latency_ms: latency_ms
+
+  - condition:
+      field: status_code
+      op: ">"
+      value: 499
+    event_type: request_failure
+    attributes:
+      status_code: status_code
+
+  - condition:
+      field: dependency
+      op: "contains"
+      value: service-C
+    event_type: dependency_timeout
+    attributes:
+      dependency: dependency
